@@ -8,7 +8,7 @@ Request::Request()
 
 void Request::addWordsToRequests(QString words, int count)
 {
-    QRegularExpression rx("\\s+");
+    static QRegularExpression rx("\\s+");
     QStringList wordsList = words.split(rx, Qt::SkipEmptyParts);
 
     Requests temp;

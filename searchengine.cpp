@@ -120,7 +120,7 @@ bool SearchEngine::loadConfig()
     // Получаем массив файлов
     QJsonArray files = jsonDoc.object().value("files").toArray();
 
-    foreach (const QJsonValue& value, files)
+    for(const QJsonValue& value: files)
     {
         config.filesPath.push_back(value.toString());
     }
@@ -202,7 +202,7 @@ void SearchEngine::loadRequest()
     // Получаем массив файлов
     QJsonArray files = jsonDoc.object().value("requests").toArray();
     int count = 1;
-    foreach (const QJsonValue& value, files)
+    for (const QJsonValue& value: files)
     {
         request.addWordsToRequests(value.toString(), count);
         count++;
@@ -231,26 +231,6 @@ void SearchEngine::showRequests()
 
         ui->uniqWords->append(uniqRequest);
     }
-
-    /*
-    for(QMap<QString, QVector<Entry>>::Iterator it = dictionary.getFreqDictionary()->begin();
-         it != dictionary.getFreqDictionary()->end(); it++)
-    {
-        QString out;
-        out = "index[\"" + it.key() + "\"]=";
-        QVector<Entry> entr = it.value();
-        for(int i = 0; i < entr.size(); i++)
-        {
-            out += "{" + QString::number(entr[i].docId) + "," + QString::number(entr[i].count) + "}";
-            if (i != entr.size() - 1)
-            {
-                out += ", ";
-            }
-        }
-        out += ";";
-        ui->wordsIndex->append(out);
-    }
-*/
 }
 
 void SearchEngine::addRequestToAsnwers()
@@ -279,7 +259,7 @@ void SearchEngine::findDocsForAnswer()
             //отправляем запрос на совпадения по этому слову в словаре
             QMap<int, int> docWithCount =  dictionary.findWord(word);
 
-            for (QMap<int, int>::const_iterator it = docWithCount.begin(); it != docWithCount.end(); ++it)
+            for (QMap<int, int>::Iterator it = docWithCount.begin(); it != docWithCount.end(); ++it)
             {
                 int newValue = it.value() + temp->maxCount[it.key()];
 
@@ -297,10 +277,15 @@ void SearchEngine::findDocsForAnswer()
         {
             ui->answer->append(temp->request);
 
-            for (QMap<int, int>::const_iterator it = temp->maxCount.begin(); it != temp->maxCount.end(); ++it)
+            for (QMap<int, int>::Iterator it = temp->maxCount.begin(); it != temp->maxCount.end(); ++it)
             {
                 ui->answer->append("    " + QString::number(it.key()) + " " + QString::number(it.value()));
             }
+        }
+        else
+        {
+            ui->answer->append(temp->request);
+            ui->answer->append("    Not found");
         }
     }
 }
@@ -311,7 +296,7 @@ void SearchEngine::countRelevance()
     {
         Answers *temp = answer.getAnswer(i);
 
-        for (QMap<int, int>::const_iterator it = temp->maxCount.begin(); it != temp->maxCount.end(); ++it)
+        for (QMap<int, int>::Iterator it = temp->maxCount.begin(); it != temp->maxCount.end(); ++it)
         {
             double relevance;
             relevance = it.value() / maxRelevance;
@@ -362,7 +347,7 @@ void SearchEngine::writeAnswers()
                 QList<double> keys = tempAnswer->sortedRelevance.keys();
                 QList<int> values = tempAnswer->sortedRelevance.values();
 
-                for(double i = keys.size() - 1; i >= 0; i--)
+                for(int i = keys.size() - 1; i >= 0; i--)
                 {
                     fileStream << "\t\t\t\t\"docid\": " + QString::number(values[i]) + ", \"rank\" : " + QString::number(keys[i], 'f', 3);
 
@@ -386,7 +371,7 @@ void SearchEngine::writeAnswers()
                 QList<double> keys = tempAnswer->sortedRelevance.keys();
                 QList<int> values = tempAnswer->sortedRelevance.values();
 
-                for(double i = keys.size() - 1; i >= 0; i--)
+                for(int i = keys.size() - 1; i >= 0; i--)
                 {
                     fileStream << "\t\t\t\"docid\": " + QString::number(values[i])
                                       + ", \"rank\" : " + QString::number(keys[i], 'f', 3) + "\n";
@@ -397,84 +382,5 @@ void SearchEngine::writeAnswers()
         fileStream << "\t}\n";
         fileStream << "}";
     }
-
-
-
-    /*
-    QFile answerFile("answers.json");
-    if(answerFile.open(QFile::WriteOnly | QIODevice::Text))
-    {
-        QTextStream fileStream(&answerFile);
-        fileStream << "{\n";
-        fileStream << "\t\"answers\": {\n";
-
-        for(int i = 0; i < answer.getSizeOfAnswer();i++)
-        {
-            Answers* tempAnswer = answer.getAnswer(i);
-
-            fileStream << "\t\t\"" + tempAnswer->request + "\": {\n";
-            if (tempAnswer->result)
-            {
-                fileStream << "\t\t\t\"result\": \"true\",\n";
-            }
-            else
-            {
-                fileStream << "\t\t\t\"result\": \"false\"\n";
-                if (i + 1 >= answer.getSizeOfAnswer())
-                {
-                    fileStream << "\t\t}\n";
-                }
-                else
-                {
-                    fileStream << "\t\t},\n";
-                }
-
-                continue;
-            }
-
-            if (tempAnswer->relevance.size() > 1)
-            {
-                fileStream << "\t\t\t\"relevance\":{ \n";
-
-                int currentRow = 1;
-                foreach (int key, tempAnswer->relevance.keys()) {
-                    double value = tempAnswer->relevance.value(key);
-                    fileStream << "\t\t\t\t\"docid\": " + QString::number(key) + ", \"rank\" : " + QString::number(value, 'f', 3);
-
-                    if (currentRow < tempAnswer->relevance.size() && currentRow < maxRelevance)
-                    {
-                        fileStream << ", \n";
-                    }
-                    else
-                    {
-                        fileStream << "\n \t\t\t} \n";
-                        break;
-                    }
-                    currentRow++;
-                }
-                fileStream << "\t\t},\n";
-            }
-            else
-            {
-                foreach (int key, tempAnswer->relevance.keys())
-                {
-                    double value = tempAnswer->relevance.value(key);
-                    fileStream << "\t\t\t\"docid\": " + QString::number(key) + ", \"rank\" : " + QString::number(value, 'f', 3) + "\n";
-                }
-                if (i + 1 >= answer.getSizeOfAnswer())
-                {
-                    fileStream << "\t\t}\n";
-                }
-                else
-                {
-                    fileStream << "\t\t},\n";
-                }
-
-            }
-        }
-        fileStream << "\t}\n";
-        fileStream << "}";
-    }
-*/
 }
 

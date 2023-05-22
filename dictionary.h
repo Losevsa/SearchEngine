@@ -7,6 +7,7 @@
 #include <QFutureWatcher>
 #include <QtConcurrent>
 #include <QTextBrowser>
+#include <QThread>
 
 struct Entry
 {

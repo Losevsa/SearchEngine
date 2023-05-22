@@ -12,7 +12,6 @@
 #include "dictionary.h"
 #include "request.h"
 #include "answer.h"
-#include "jsonwriter.h"
 
 
 struct Configuration

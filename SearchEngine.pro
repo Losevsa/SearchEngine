@@ -11,7 +11,6 @@ CONFIG += c++17
 SOURCES += \
     answer.cpp \
     dictionary.cpp \
-    jsonwriter.cpp \
     main.cpp \
     request.cpp \
     searchengine.cpp
@@ -19,7 +18,6 @@ SOURCES += \
 HEADERS += \
     answer.h \
     dictionary.h \
-    jsonwriter.h \
     request.h \
     searchengine.h
 

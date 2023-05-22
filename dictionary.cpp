@@ -14,9 +14,10 @@ void Dictionary::addNewDoc(QString doc)
 
 void Dictionary::madeFreqDictionary()
 {
-    //Будем индексировать в 5 потоков
+    //Будем индексировать в N потоков, зависит от ядер
     QVector<QFuture<void>> threads;
-    threads.reserve(5);
+    int processorCount = QThread::idealThreadCount();
+    threads.reserve(processorCount);
 
     QFutureWatcher<void> watcher;
 
@@ -29,7 +30,7 @@ void Dictionary::madeFreqDictionary()
 
         //Если добавленных "потоков" = 5, то заходим, запускаем и ждем
         //когда закончится индексация и дальше покругу
-        if (threadsCount == 5)
+        if (threadsCount == processorCount)
         {
             for (auto& thread : threads)
             {
@@ -45,7 +46,6 @@ void Dictionary::madeFreqDictionary()
 
     //Если после завершения цикла остались не завершенные "потоки"
     //то запускаем и ждем окончания
-    //Больше 4х потоков не будет
     for (auto& thread : threads)
     {
         watcher.setFuture(thread);
@@ -91,7 +91,7 @@ void addWordsToFreqDictionary(size_t docId, QMap<QString, QVector<Entry>>* freqD
 {
     //"выписываем" все слова из doc
     // "\\s+" - означает, что мы пропускаем любые пробелы
-    QRegularExpression rx("\\s+");
+    static QRegularExpression rx("\\s+");
     QStringList words = doc.split(rx, Qt::SkipEmptyParts);
 
     QMap<QString, QVector<Entry>> tempDict;
@@ -99,10 +99,8 @@ void addWordsToFreqDictionary(size_t docId, QMap<QString, QVector<Entry>>* freqD
     //Добавим каждое слово в новый словарь
     foreach(QString word, words)
     {
-        bool haveKeys = false;
         if (tempDict.contains(word))
         {
-            haveKeys = true;
             QVector<Entry>& entry = tempDict[word];
 
             bool haveDocId = false;
@@ -125,16 +123,13 @@ void addWordsToFreqDictionary(size_t docId, QMap<QString, QVector<Entry>>* freqD
         }
         else
         {
-            if (!haveKeys)
-            {
-                Entry entr;
-                entr.docId = docId;
-                entr.count = 1;
-                QVector<Entry> newValue;
-                newValue.append(entr);
+            Entry entr;
+            entr.docId = docId;
+            entr.count = 1;
+            QVector<Entry> newValue;
+            newValue.append(entr);
 
-                tempDict.insert(word, newValue);
-            }
+            tempDict.insert(word, newValue);
         }
     }
 
