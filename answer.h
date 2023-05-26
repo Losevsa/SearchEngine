@@ -24,9 +24,9 @@ class Answer
 public:
     Answer();
 
-    void addRequests(Answers answer);
+    void addRequests(const Answers& answer);
     int getSizeOfAnswer();
-    Answers *getAnswer(int index);
+    const Answers &getAnswer(const int &index);
 
 private:
     QVector<Answers> answer;

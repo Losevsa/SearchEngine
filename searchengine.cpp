@@ -62,7 +62,11 @@ SearchEngine::SearchEngine(QWidget *parent)
         countRelevance();
 
         writeAnswers();
+
+        QTest::qExec(new TestDictionary);
     }
+
+
 }
 
 SearchEngine::~SearchEngine()
@@ -155,8 +159,8 @@ void SearchEngine::readFiles()
 
 void SearchEngine::showFreqDictionary()
 {
-    for(QMap<QString, QVector<Entry>>::Iterator it = dictionary.getFreqDictionary()->begin();
-         it != dictionary.getFreqDictionary()->end(); it++)
+    for(QMap<QString, QVector<Entry>>::ConstIterator it = dictionary.getFreqDictionary().begin();
+         it != dictionary.getFreqDictionary().end(); it++)
     {
         QString out;
         out = "index[\"" + it.key() + "\"]=";
@@ -211,7 +215,7 @@ void SearchEngine::loadRequest()
 
 void SearchEngine::showRequests()
 {
-    for(QVector<Requests>::Iterator it = request.getRequests()->begin(); it != request.getRequests()->end(); it++)
+    for(QVector<Requests>::ConstIterator it = request.getRequests().begin(); it != request.getRequests().end(); it++)
     {
         QString fullRequest = it->name + ": ";
 
@@ -235,7 +239,7 @@ void SearchEngine::showRequests()
 
 void SearchEngine::addRequestToAsnwers()
 {
-    for(QVector<Requests>::Iterator it = request.getRequests()->begin(); it != request.getRequests()->end(); it++)
+    for(QVector<Requests>::ConstIterator it = request.getRequests().begin(); it != request.getRequests().end(); it++)
     {
         Answers temp;
 
@@ -251,40 +255,40 @@ void SearchEngine::findDocsForAnswer()
     //Загружаем каждый "ответ"
     for (int i = 0; i < answer.getSizeOfAnswer(); i++)
     {
-        Answers *temp = answer.getAnswer(i);
+        Answers temp = answer.getAnswer(i);
 
         //Смотрим на каждое слово в нашем ответе
-        foreach (auto word, temp->words)
+        foreach (auto word, temp.words)
         {
             //отправляем запрос на совпадения по этому слову в словаре
             QMap<int, int> docWithCount =  dictionary.findWord(word);
 
             for (QMap<int, int>::Iterator it = docWithCount.begin(); it != docWithCount.end(); ++it)
             {
-                int newValue = it.value() + temp->maxCount[it.key()];
+                int newValue = it.value() + temp.maxCount[it.key()];
 
                 if(maxRelevance < newValue)
                 {
                     maxRelevance = newValue;
                 }
 
-                temp->maxCount.insert(it.key(),newValue);
-                temp->result = true;
+                temp.maxCount.insert(it.key(),newValue);
+                temp.result = true;
             }
         }
 
-        if (temp->result)
+        if (temp.result)
         {
-            ui->answer->append(temp->request);
+            ui->answer->append(temp.request);
 
-            for (QMap<int, int>::Iterator it = temp->maxCount.begin(); it != temp->maxCount.end(); ++it)
+            for (QMap<int, int>::Iterator it = temp.maxCount.begin(); it != temp.maxCount.end(); ++it)
             {
                 ui->answer->append("    " + QString::number(it.key()) + " " + QString::number(it.value()));
             }
         }
         else
         {
-            ui->answer->append(temp->request);
+            ui->answer->append(temp.request);
             ui->answer->append("    Not found");
         }
     }
@@ -294,14 +298,14 @@ void SearchEngine::countRelevance()
 {
     for (int i = 0; i < answer.getSizeOfAnswer(); i++)
     {
-        Answers *temp = answer.getAnswer(i);
+        Answers temp = answer.getAnswer(i);
 
-        for (QMap<int, int>::Iterator it = temp->maxCount.begin(); it != temp->maxCount.end(); ++it)
+        for (QMap<int, int>::Iterator it = temp.maxCount.begin(); it != temp.maxCount.end(); ++it)
         {
             double relevance;
             relevance = it.value() / maxRelevance;
-            temp->relevance.insert(it.key(),relevance);
-            temp->sortedRelevance.insert(relevance, it.key());
+            temp.relevance.insert(it.key(),relevance);
+            temp.sortedRelevance.insert(relevance, it.key());
         }
     }
 }
@@ -317,10 +321,10 @@ void SearchEngine::writeAnswers()
 
         for(int i = 0; i < answer.getSizeOfAnswer();i++)
         {
-            Answers* tempAnswer = answer.getAnswer(i);
+            Answers tempAnswer = answer.getAnswer(i);
 
-            fileStream << "\t\t\"" + tempAnswer->request + "\": {\n";
-            if (tempAnswer->result)
+            fileStream << "\t\t\"" + tempAnswer.request + "\": {\n";
+            if (tempAnswer.result)
             {
                 fileStream << "\t\t\t\"result\": \"true\",\n";
             }
@@ -338,20 +342,20 @@ void SearchEngine::writeAnswers()
 
                 continue;
             }
-            if (tempAnswer->sortedRelevance.size() > 1)
+            if (tempAnswer.sortedRelevance.size() > 1)
             {
                 fileStream << "\t\t\t\"relevance\":{ \n";
 
                 int currentRow = 1;
 
-                QList<double> keys = tempAnswer->sortedRelevance.keys();
-                QList<int> values = tempAnswer->sortedRelevance.values();
+                QList<double> keys = tempAnswer.sortedRelevance.keys();
+                QList<int> values = tempAnswer.sortedRelevance.values();
 
                 for(int i = keys.size() - 1; i >= 0; i--)
                 {
                     fileStream << "\t\t\t\t\"docid\": " + QString::number(values[i]) + ", \"rank\" : " + QString::number(keys[i], 'f', 3);
 
-                    if (currentRow < tempAnswer->sortedRelevance.size() && currentRow < config.maxResponses)
+                    if (currentRow < tempAnswer.sortedRelevance.size() && currentRow < config.maxResponses)
                     {
                         fileStream << ", \n";
                     }
@@ -368,8 +372,8 @@ void SearchEngine::writeAnswers()
             }
             else
             {
-                QList<double> keys = tempAnswer->sortedRelevance.keys();
-                QList<int> values = tempAnswer->sortedRelevance.values();
+                QList<double> keys = tempAnswer.sortedRelevance.keys();
+                QList<int> values = tempAnswer.sortedRelevance.values();
 
                 for(int i = keys.size() - 1; i >= 0; i--)
                 {

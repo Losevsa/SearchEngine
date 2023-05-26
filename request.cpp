@@ -6,7 +6,7 @@ Request::Request()
 
 }
 
-void Request::addWordsToRequests(QString words, int count)
+void Request::addWordsToRequests(QString words, int& count)
 {
     static QRegularExpression rx("\\s+");
     QStringList wordsList = words.split(rx, Qt::SkipEmptyParts);
@@ -33,9 +33,9 @@ void Request::addWordsToRequests(QString words, int count)
     request.push_back(temp);
 }
 
-QVector<Requests> *Request::getRequests()
+const QVector<Requests> &Request::getRequests()
 {
-    return &request;
+    return request;
 }
 
 void Request::findOnlyUniqWords()

@@ -19,12 +19,12 @@ class Dictionary
 public:
     Dictionary();
 
-    void addNewDoc(QString doc);
+    void addNewDoc(const QString &doc);
     void madeFreqDictionary();
     void clearDocs();
     int sizeFreqDictionary();
-    QMap<QString, QVector<Entry>>* getFreqDictionary();
-    QMap<int, int> findWord(QString word);
+    const QMap<QString, QVector<Entry>>& getFreqDictionary();
+    const QMap<int, int> findWord(const QString& word);
 
 private:
     QVector<QString> docs;

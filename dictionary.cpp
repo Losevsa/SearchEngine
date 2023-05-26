@@ -7,7 +7,7 @@ Dictionary::Dictionary()
     freqDictionary = new QMap<QString, QVector<Entry>>;
 }
 
-void Dictionary::addNewDoc(QString doc)
+void Dictionary::addNewDoc(const QString &doc)
 {
     docs.push_back(doc);
 }
@@ -64,12 +64,12 @@ int Dictionary::sizeFreqDictionary()
     return freqDictionary->size();
 }
 
-QMap<QString, QVector<Entry> > *Dictionary::getFreqDictionary()
+const QMap<QString, QVector<Entry>>& Dictionary::getFreqDictionary()
 {
-    return freqDictionary;
+    return *freqDictionary;
 }
 
-QMap<int, int> Dictionary::findWord(QString word)
+const QMap<int, int> Dictionary::findWord(const QString &word)
 {
     QMap<int, int> tempMap;
 

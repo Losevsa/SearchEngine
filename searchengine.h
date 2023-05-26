@@ -12,6 +12,7 @@
 #include "dictionary.h"
 #include "request.h"
 #include "answer.h"
+#include "testdictionary.h"
 
 
 struct Configuration

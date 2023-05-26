@@ -19,8 +19,8 @@ class Request
 public:
     Request();
 
-    void addWordsToRequests(QString words, int count);
-    QVector<Requests> *getRequests();
+    void addWordsToRequests(QString words, int& count);
+    const QVector<Requests> &getRequests();
     void findOnlyUniqWords();
     void clearNotUniqWords();
 
